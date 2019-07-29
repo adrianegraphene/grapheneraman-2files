@@ -31,9 +31,9 @@ from matplotlib import pyplot
 # This code uses method one. I'd like to change it to method 2 if possible.
 
 ###Change myPath
-myPath = '/Users/DerekChang/Documents/Ragan Lab/Test/063019-BijelBoxC2-C3 copy 2/C2'
-SamplePath = '/Users/DerekChang/Documents/Ragan Lab/Test/063019-BijelBoxC2-C3 copy 2/C2'
-CombinedPath = '/Users/DerekChang/Documents/Ragan Lab/Test/063019-BijelBoxC2-C3 copy 2/C2/Combined'
+myPath = '/Users/aeg/Desktop/Research/Experiment_Data/Raman_Data/063019-NiFilmsBox5C2-C3'
+SamplePath = '/Users/aeg/Desktop/Research/Experiment_Data/Raman_Data/063019-NiFilmsBox5C2-C3'
+CombinedPath = '/Users/aeg/Desktop/Research/Experiment_Data/Raman_Data/063019-NiFilmsBox5C2-C3/Combined'
 os.chdir(myPath)
 
 FileNames = glob.glob1(myPath, '*.txt') #list(?)
@@ -85,7 +85,7 @@ for counter, datafile in enumerate(FileNames):  # enumerate splits a list up int
     # Save each filename in a list
     filenames[counter] = datafile
 
-    data_file = np.loadtxt(path, delimiter='\t')  # put skiprows=1 into loadtxt for new sets of data with headers still in.
+    data_file = np.loadtxt(path, delimiter='\t',dtype="float")  # put skiprows=1 into loadtxt for new sets of data with headers still in.
     wavenumber[counter] = data_file[:, 0]
     intensity[counter] = data_file[:, 1]
     # Strip txt from datafile and change to uppercase.
@@ -165,7 +165,7 @@ for counter, datafile in enumerate(FileNames):  # enumerate splits a list up int
 for i in range(len(fileNamesTwoD)):
     for j in range(len(fileNamesG)):
         if np.array_equal(fileNamesTwoD[i] ,fileNamesG[j]):
-            ratio[i] = np.array(b[i] / a[j])
+            ratio[i] = np.array(b[i] / a[j], dtype="float")
             def createFolder(directory):         ##creates folder if there isn't one exist already
                 try:
                     if not os.path.exists(directory):
@@ -178,24 +178,31 @@ for i in range(len(fileNamesTwoD)):
             with open("2DG_Ratio_Combined.txt", "wb") as CR:
             # np.savetxt(listG[j].append(list2D[i]))
                 np.savetxt(CR, list2D[i], delimiter='\t')
-                np.savetxt(CR, listG[i], delimiter='\t')
+                np.savetxt(CR, listG[j], delimiter='\t')  #AEG EDIT: "i" was changed to "j" Here
             # print(listG[j])
             # np.savetxt('2DG_Ratio_Combined.txt',listG[j], delimiter = '\t')
                 VisN = len(fileNamesTwoD)-1
             # print('this is VisN', VisN)
                 NameG = fileNamesTwoD[j]
-                os.rename('2DG_Ratio_Combined.txt', '%s' %NameG)
+#                os.rename('2DG_Ratio_Combined.txt', '%s' %NameG)
+                os.rename('2DG_Ratio_Combined.txt', '%s' %NameG+".txt")
+
                 os.chdir(SamplePath)
                 if fileNamesTwoD[i] != fileNamesG[j]:
                     j = j + 1
                 if fileNamesTwoD[i] == len(fileNamesG)-1:
                     break
 
+#AEG EDIT: Call DataNames again to populate it with txt files. This was empty before, so no for loop was initiated
+#New error with 
+DataNames = glob.glob1(CombinedPath, '*.txt')  
+
 ###Graphing
 for counter2, dataNames in enumerate(DataNames):
+    print('GRAPH TEST') #Test to verify we're in the loop, remove when done.
     os.chdir(CombinedPath)
     CombinedPath = CombinedPath + '/' + dataNames
-    dataNames = np.loadtxt(CombinedPath,delimiter='\t')  
+    dataNames = np.loadtxt(CombinedPath,delimiter='\t',dtype="float")  
     wavenumber1[counter2] = dataNames[:, 0]
     intensity1[counter2] = dataNames[:, 1]
     print('this is date name',dataNames)
@@ -206,7 +213,6 @@ for counter2, dataNames in enumerate(DataNames):
         plt.show()
         os.chdir(SamplePath)
         plt.savefig('Graphene-on-quartz.png')
-
 # f = open('Test/output.txt', 'w')
 # for i in range(len(listG)):
 #    print('this is list', list2D)
@@ -235,3 +241,5 @@ avgRatio = sumR/len(ratio)
 
 print('this is average', avgRatio)
 # print('this is names ', NameG)
+
+
