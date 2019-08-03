@@ -31,13 +31,13 @@ from matplotlib import pyplot
 # This code uses method one. I'd like to change it to method 2 if possible.
 
 ###Change myPath
-myPath = '/Users/aeg/Desktop/Research/Experiment_Data/Raman_Data/063019-NiFilmsBox5C2-C3'
-SamplePath = '/Users/aeg/Desktop/Research/Experiment_Data/Raman_Data/063019-NiFilmsBox5C2-C3'
-CombinedPath = '/Users/aeg/Desktop/Research/Experiment_Data/Raman_Data/063019-NiFilmsBox5C2-C3/Combined'
+myPath = '/Users/DerekChang/Documents/Ragan Lab/Test/072919-NiFilmsBox6_D2-D6/D3'
+CombinedPath = '/Users/DerekChang/Documents/Ragan Lab/Test/072919-NiFilmsBox6_D2-D6/D3/Combined'
 os.chdir(myPath)
 
+# SamplePath = '/Users/DerekChang/Documents/Ragan Lab/Test/072919-NiFilmsBox6_D2-D6/D3'
+
 FileNames = glob.glob1(myPath, '*.txt') #list(?)
-DataNames = glob.glob1(CombinedPath, '*.txt')
 
 numberofplots = len(FileNames)
 
@@ -64,6 +64,7 @@ intensity = {}
 intensity1 = {}
 
 filenames = {}
+filenames2 = {}
 fileNamesTwoD = {}
 fileNamesG = {}
 gPeakArray = {}
@@ -85,7 +86,7 @@ for counter, datafile in enumerate(FileNames):  # enumerate splits a list up int
     # Save each filename in a list
     filenames[counter] = datafile
 
-    data_file = np.loadtxt(path, delimiter='\t',dtype="float")  # put skiprows=1 into loadtxt for new sets of data with headers still in.
+    data_file = np.loadtxt(path, delimiter='\t', dtype="float", skiprows= 1)  # put skiprows=1 into loadtxt for new sets of data with headers still in.
     wavenumber[counter] = data_file[:, 0]
     intensity[counter] = data_file[:, 1]
     # Strip txt from datafile and change to uppercase.
@@ -102,12 +103,12 @@ for counter, datafile in enumerate(FileNames):  # enumerate splits a list up int
 
     # Find peaks of baseline-subtracted curve
     indexes3 = peakutils.indexes(y3, thres=0.12, min_dist=90)
-    print(strippedDatafile)
-    print(len(indexes3))
+    # print(strippedDatafile)
+    # print(len(indexes3))
 
     # Code added 032019 to select intensities from known X-range in case of multiple peaks
     for iterator, peakpos in enumerate(x[indexes3]):
-        print(peakpos)
+        # print(peakpos)
         if peakpos > 1540 and peakpos < 1600:
             fileNamesG[gCounter] = np.array(strippedDatafile[:-1])
             #   print('filename G is %s' % fileNamesG[counter])
@@ -121,7 +122,7 @@ for counter, datafile in enumerate(FileNames):  # enumerate splits a list up int
             #   print('gCounter is %i' % gCounter)
             # x[indexes3[iterator]] #This is the x position of the G peak.
             # y3[indexes3[iterator]] #This is the intensity.
-            print('G indexes are %f' % y3[indexes3[iterator]])
+            # print('G indexes are %f' % y3[indexes3[iterator]])
             # a = x[indexes3[iterator]]
         if peakpos > 2660 and peakpos < 2730:
             fileNamesTwoD[twoDCounter] = np.array(strippedDatafile[:-2])
@@ -132,7 +133,7 @@ for counter, datafile in enumerate(FileNames):  # enumerate splits a list up int
             b[twoDCounter] = np.array(twoDPeakArray[twoDCounter])
             twoDCounter = twoDCounter + 1
             # b = x[indexes3[iterator]]
-            print('2D indexes are %f' % y3[indexes3[iterator]])  # this is 2D intensity
+            # print('2D indexes are %f' % y3[indexes3[iterator]])  # this is 2D intensity
         # print(b/a)
 
         #print(list2D[i])
@@ -178,41 +179,37 @@ for i in range(len(fileNamesTwoD)):
             with open("2DG_Ratio_Combined.txt", "wb") as CR:
             # np.savetxt(listG[j].append(list2D[i]))
                 np.savetxt(CR, list2D[i], delimiter='\t')
-                np.savetxt(CR, listG[j], delimiter='\t')  #AEG EDIT: "i" was changed to "j" Here
+                np.savetxt(CR, listG[j], delimiter='\t')
             # print(listG[j])
             # np.savetxt('2DG_Ratio_Combined.txt',listG[j], delimiter = '\t')
-                VisN = len(fileNamesTwoD)-1
+            #     VisN = len(fileNamesTwoD)-1
             # print('this is VisN', VisN)
                 NameG = fileNamesTwoD[j]
-#                os.rename('2DG_Ratio_Combined.txt', '%s' %NameG)
                 os.rename('2DG_Ratio_Combined.txt', '%s' %NameG+".txt")
-
-                os.chdir(SamplePath)
+                DataNames = glob.glob1(CombinedPath, '*.txt')
+                for counter2, dataNames in enumerate(DataNames):
+                    os.chdir(CombinedPath)
+                    Combined_Path = CombinedPath + '/' + dataNames
+                    filenames2[counter2] = dataNames
+                    data_Names = np.loadtxt(Combined_Path, delimiter='\t', dtype="float")
+                    wavenumber1[counter2] = data_Names[:, 0]
+                    intensity1[counter2] = data_Names[:, 1]
+                    axs[counter2].plot(wavenumber1[counter2], intensity1[counter2])
+                    axs[counter2].set_xlabel(r'$Wavenumber\ (cm^{-1})$')
+                    axs[counter2].set_ylabel('$Intensity\ (a.u.)$')
+                    if len(DataNames) - 1 == counter2:
+                        # plt.show()
+                        os.chdir(myPath)
+                        plt.savefig('Graphene-on-quartz.png')
+                os.chdir(myPath)
                 if fileNamesTwoD[i] != fileNamesG[j]:
                     j = j + 1
                 if fileNamesTwoD[i] == len(fileNamesG)-1:
                     break
 
-#AEG EDIT: Call DataNames again to populate it with txt files. This was empty before, so no for loop was initiated
-#New error with 
-DataNames = glob.glob1(CombinedPath, '*.txt')  
-
 ###Graphing
-for counter2, dataNames in enumerate(DataNames):
-    print('GRAPH TEST') #Test to verify we're in the loop, remove when done.
-    os.chdir(CombinedPath)
-    CombinedPath = CombinedPath + '/' + dataNames
-    dataNames = np.loadtxt(CombinedPath,delimiter='\t',dtype="float")  
-    wavenumber1[counter2] = dataNames[:, 0]
-    intensity1[counter2] = dataNames[:, 1]
-    print('this is date name',dataNames)
-    axs[counter2].plot(wavenumber1[counter2], intensity1[counter2])
-    axs[counter2].set_xlabel(r'$Wavenumber\ (cm^{-1})$')
-    axs[counter2].set_ylabel('$Intensity\ (a.u.)$')
-    if len(DataNames) - 1 == counter2:
-        plt.show()
-        os.chdir(SamplePath)
-        plt.savefig('Graphene-on-quartz.png')
+
+
 # f = open('Test/output.txt', 'w')
 # for i in range(len(listG)):
 #    print('this is list', list2D)
@@ -238,8 +235,6 @@ for w in range(len(ratio)):    ##this calculates the average ratio
      if w > len(ratio):
          break
 avgRatio = sumR/len(ratio)
-
+print('')
 print('this is average', avgRatio)
 # print('this is names ', NameG)
-
-
